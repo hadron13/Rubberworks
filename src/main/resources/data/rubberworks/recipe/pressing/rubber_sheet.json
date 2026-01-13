@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "rubberworks:rubber"
+    }
+  ],
+  "results": [
+    {
+      "id": "rubberworks:rubber_sheet"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "rubberworks:sapping",
+  "ingredients": [
+    {
+      "item": "minecraft:warped_stem"
+    },
+    {
+      "item": "minecraft:warped_wart_block"
+    }
+  ],
+  "results": [
+    {
+      "amount": 25,
+      "id": "minecraft:lava"
+    }
+  ]
+}

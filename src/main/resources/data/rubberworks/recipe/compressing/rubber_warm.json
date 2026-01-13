@@ -1,0 +1,15 @@
+{
+  "type": "rubberworks:compressing",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 500,
+      "fluid": "rubberworks:resin"
+    }
+  ],
+  "results": [
+    {
+      "id" : "rubberworks:rubber"
+    }
+  ]
+}
