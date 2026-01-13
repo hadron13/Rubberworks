@@ -191,15 +191,14 @@ public class CompressorBlockEntity extends KineticBlockEntity {
             if (newRecipe.isEmpty()) {
                 timer = 100;
                 sendData();
+                return;
             } else {
                 recipe = newRecipe.get();
-                timer = recipe.getProcessingDuration();
-                sendData();
             }
-            return;
         }
 
         timer = recipe.getProcessingDuration();
+        if(timer == 0) timer = 100;
         sendData();
     }
 
