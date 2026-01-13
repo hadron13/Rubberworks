@@ -1,0 +1,17 @@
+{
+  "itemGroup.rubberworks.main": "Create: Rubberworks",
+
+  "rubberworks.hint.sapper.full.title": "Internal Tank Full",
+  "rubberworks.hint.sapper.full": "",
+  "rubberworks.hint.compressor.reverse.title": "Direction Requirement:",
+  "rubberworks.hint.compressor.reverse": "It appears that this Compressor is rotating in the _wrong direction_.",
+  "rubberworks.hint.compressor.heat.title": "Heat Requirement:",
+  "rubberworks.hint.compressor.heat": "It appears that this Compressor has _not enough heat_",
+ 
+
+  "rubberworks.recipe.compressing.campfire_heat": "Warm",
+
+  "rubberworks.recipe.sapping": "Sapping",
+  "rubberworks.recipe.compressing": "Compressing"
+
+}

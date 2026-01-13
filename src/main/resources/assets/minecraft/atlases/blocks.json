@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "rubberworks:fluid/resin_still"
+    },
+    {
+      "type": "single",
+      "resource": "rubberworks:fluid/resin_flow"
+    }
+  ]
+}

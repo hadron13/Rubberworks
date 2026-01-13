@@ -1,0 +1,19 @@
+// 1.21.1	2026-01-12T10:19:08.52505403	Registrate Provider for rubberworks [Registries, Data Maps, Recipes, Advancements, Loot Tables, Tags (enchantments), Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Blockstates, Item models, Lang (en_us/en_ud), generic_client_provider]
+65fd197f4a2f28c85e142326fb8496e7399bac19 assets/rubberworks/blockstates/compressor.json
+61b57a37c551339b8706c2e68002659807479dc5 assets/rubberworks/blockstates/resin.json
+1e9cf52b562c50e9f86d5f536f46fddd6396eb8b assets/rubberworks/blockstates/rubber_block.json
+b267aba4a24a71fe9a1c02139e3240a2fd9eb318 assets/rubberworks/blockstates/sapper.json
+51efceef6ad68e0d991eded3404e0a66486e3775 assets/rubberworks/lang/en_ud.json
+f3fdec78cf8696374de3ec28e87f0355ec34aad2 assets/rubberworks/lang/en_us.json
+a319225d9a4c2aec4fac2a737ec80b406d272bc6 assets/rubberworks/models/block/resin.json
+8405e167a3ff998b664d19f91404b6d81b4268c4 assets/rubberworks/models/item/compressor.json
+f30e19161369fc49f23b34c24f444c54792469a6 assets/rubberworks/models/item/resin_bucket.json
+1962fd44d318c2a94a233b7de5c4461768d8d80b assets/rubberworks/models/item/rubber.json
+182e5d2895691b716f41bb835f41e842945287f0 assets/rubberworks/models/item/rubber_block.json
+731b8b7b9d33595f7931182226cab3c71531e8f1 assets/rubberworks/models/item/rubber_sheet.json
+543fb63695ca511d4941b8ff7c61e046ea3e8dc9 assets/rubberworks/models/item/sapper.json
+e9d8edaeae28593333850f52fda32818e7127434 data/minecraft/tags/block/mineable/axe.json
+a972882bca70d94a273dd166277d4235c6883fc0 data/minecraft/tags/block/mineable/pickaxe.json
+1a8e2a2d3598f621f7d18ad34c60d43675fa9921 data/rubberworks/loot_table/blocks/compressor.json
+2c5b4c05b936bdca325db17b610214df9711d2db data/rubberworks/loot_table/blocks/rubber_block.json
+f877d0dfc4eca27c5393a681e5ff9e3e95d7e8af data/rubberworks/loot_table/blocks/sapper.json

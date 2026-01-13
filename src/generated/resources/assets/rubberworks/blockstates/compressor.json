@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "rubberworks:block/compressor/block",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "rubberworks:block/compressor/block",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "rubberworks:block/compressor/block"
+    },
+    "facing=west": {
+      "model": "rubberworks:block/compressor/block",
+      "y": 90
+    }
+  }
+}

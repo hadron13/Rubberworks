@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "rubberworks:block/sapper/block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "rubberworks:block/sapper/block"
+    },
+    "facing=south": {
+      "model": "rubberworks:block/sapper/block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "rubberworks:block/sapper/block",
+      "y": 270
+    }
+  }
+}

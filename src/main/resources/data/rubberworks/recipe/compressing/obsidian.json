@@ -1,0 +1,16 @@
+{
+  "type": "rubberworks:compressing",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 1000,
+      "fluid": "minecraft:lava"
+    }
+  ],
+  "results": [
+    {
+      "id" : "minecraft:obsidian"
+    }
+  ],
+  "heat_requirement": "heated"
+}
