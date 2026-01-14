@@ -92,7 +92,7 @@ config="${mod_id}.mixins.json"
     modId="create"
     type="required"
     versionRange="[6.0.8,6.1.0)"
-    ordering="NONE"
+    ordering="AFTER"
     side="BOTH"
 
 
