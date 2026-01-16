@@ -11,5 +11,6 @@
       "item" : "minecraft:obsidian"
     }
   ],
-  "processingTime": 150
+  "processingTime": 150,
+  "heatRequirement": "heated"
 }

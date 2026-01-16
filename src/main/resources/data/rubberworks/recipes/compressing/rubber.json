@@ -12,5 +12,5 @@
       "item" : "rubberworks:rubber"
     }
   ],
-  "heat_requirement": "heated"
+  "heatRequirement": "heated"
 }
