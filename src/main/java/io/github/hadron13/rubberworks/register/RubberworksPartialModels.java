@@ -15,13 +15,23 @@ public class RubberworksPartialModels {
     public static final PartialModel
             SAPPER_HEAD = block("sapper/head"),
             SAPPER_POLE = block("sapper/pole"),
-            COMPRESSOR_ROLL = block("compressor/roll")
+            COMPRESSOR_ROLL = block("compressor/roll");
     ;
-
 
     public static final Map<FluidTransportBehaviour.AttachmentTypes.ComponentPartials, Map<Direction, PartialModel>> STEEL_PIPE_ATTACHMENTS =
             new EnumMap<>(FluidTransportBehaviour.AttachmentTypes.ComponentPartials.class);
 
+    static {
+        for (FluidTransportBehaviour.AttachmentTypes.ComponentPartials type : FluidTransportBehaviour.AttachmentTypes.ComponentPartials
+                .values()) {
+            Map<Direction, PartialModel> map = new HashMap<>();
+            for (Direction d : Iterate.directions) {
+                String asId = Lang.asId(type.name());
+                map.put(d, block("steel_fluid_pipe/" + asId + "/" + Lang.asId(d.getSerializedName())));
+            }
+            STEEL_PIPE_ATTACHMENTS.put(type, map);
+        }
+    }
 
     private static PartialModel block(String path) {
         return PartialModel.of(Rubberworks.asResource("block/" + path));

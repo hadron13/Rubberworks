@@ -1,6 +1,7 @@
 package io.github.hadron13.rubberworks.register;
 
 import com.simibubi.create.AllFluids;
+import com.simibubi.create.AllTags;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.util.entry.FluidEntry;
@@ -10,17 +11,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.fluids.BaseFlowingFluid;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
 import org.joml.Vector3f;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class RubberworksFluids {
-    private static final CreateRegistrate REGISTRATE = Rubberworks.registrate();
+    private static final CreateRegistrate REGISTRATE = Rubberworks.registrate().setCreativeTab(RubberworksCreativeTabs.MAIN_TAB);
 
-    public static final FluidEntry<BaseFlowingFluid.Flowing> RESIN = REGISTRATE
+
+    public static final FluidEntry<ForgeFlowingFluid.Flowing> RESIN = REGISTRATE
             .fluid("resin",
                     Rubberworks.asResource("fluid/resin_still"),
                     Rubberworks.asResource("fluid/resin_flow"))
@@ -30,24 +34,36 @@ public class RubberworksFluids {
                     .tickRate(25)
                     .slopeFindDistance(3)
                     .explosionResistance(100f))
-            .source(BaseFlowingFluid.Source::new)
+            .source(ForgeFlowingFluid.Source::new)
             .bucket()
+            .tag(AllTags.forgeItemTag("buckets/resin"))
             .build().register();
 
+    public static class TransparentFluidType extends FluidType {
+        protected ResourceLocation stillTexture;
+        protected ResourceLocation flowingTexture;
 
-    public static class TransparentFluidType extends AllFluids.TintedFluidType{
         protected TransparentFluidType(FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-            super(properties, stillTexture, flowingTexture);
+            super(properties);
+            this.stillTexture = stillTexture;
+            this.flowingTexture = flowingTexture;
         }
 
-        @Override
-        protected int getTintColor(FluidStack stack) {
-            return NO_TINT;
-        }
+        public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+            consumer.accept(new IClientFluidTypeExtensions() {
+                public ResourceLocation getStillTexture() {
+                    return TransparentFluidType.this.stillTexture;
+                }
 
-        @Override
-        protected int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return NO_TINT;
+                public ResourceLocation getFlowingTexture() {
+                    return TransparentFluidType.this.flowingTexture;
+                }
+
+                @Override
+                public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
+                    return 0x00ffffff;
+                }
+            });
         }
     }
 

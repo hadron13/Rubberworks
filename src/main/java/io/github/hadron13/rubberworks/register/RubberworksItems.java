@@ -6,7 +6,7 @@ import io.github.hadron13.rubberworks.Rubberworks;
 import net.minecraft.world.item.Item;
 
 public class RubberworksItems {
-    private static final CreateRegistrate REGISTRATE = Rubberworks.registrate();
+    private static final CreateRegistrate REGISTRATE = Rubberworks.registrate().setCreativeTab(RubberworksCreativeTabs.MAIN_TAB);
 
     public static void register() {}
     public static final ItemEntry<Item> RUBBER = ingredient("rubber"),

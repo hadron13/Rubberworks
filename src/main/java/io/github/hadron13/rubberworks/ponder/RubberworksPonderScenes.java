@@ -14,7 +14,7 @@ import static com.simibubi.create.infrastructure.ponder.AllCreatePonderTags.KINE
 public class RubberworksPonderScenes {
 
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
         HELPER.forComponents(RubberworksBlocks.COMPRESSOR)
                 .addStoryBoard("compressor", CompressorScenes::compressor, KINETIC_APPLIANCES, FLUIDS);

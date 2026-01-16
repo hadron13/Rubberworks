@@ -1,0 +1,31 @@
+
+modLoader="javafml" #mandatory
+loaderVersion="[47,)"
+license="MIT License"
+[[mods]]
+modId="rubberworks"
+version="${file.jarVersion}"
+displayName="Rubberworks"
+credits="simibubi, oierbravo, & latvian dev"
+authors="Redz aka terentre4e25caracteres" #optional
+description='''
+Mod made for use in Create: Back on Track modpack
+'''
+[[dependencies.rubberworks]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.rubberworks]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.rubberworks]]
+    modId="create"
+    mandatory=true
+    versionRange="[0.6.4,)"
+    ordering="AFTER"
+    side="BOTH"

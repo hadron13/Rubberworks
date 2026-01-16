@@ -7,7 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.minecraftforge.client.model.generators.ModelFile;
 
 public abstract class HorizontalDirectionalBlockStateGen extends SpecialBlockStateGen {
 

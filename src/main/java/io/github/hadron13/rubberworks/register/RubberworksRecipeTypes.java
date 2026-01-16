@@ -1,54 +1,59 @@
 package io.github.hadron13.rubberworks.register;
 
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe;
+import com.google.common.collect.ImmutableSet;
+import com.simibubi.create.AllTags;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import io.github.hadron13.rubberworks.Rubberworks;
 import io.github.hadron13.rubberworks.blocks.compressor.CompressingRecipe;
 import io.github.hadron13.rubberworks.blocks.compressor.CompressorBlockEntity;
 import io.github.hadron13.rubberworks.blocks.sapper.SappingRecipe;
 import net.createmod.catnip.lang.Lang;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public enum RubberworksRecipeTypes implements IRecipeTypeInfo, StringRepresentable {
+public enum RubberworksRecipeTypes implements IRecipeTypeInfo {
     SAPPING(SappingRecipe::new),
     COMPRESSING(CompressingRecipe::new);
-
-
-    public final ResourceLocation id;
-    public final Supplier<RecipeSerializer<?>> serializerSupplier;
-    private final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<?>> serializerObject;
+    private final ResourceLocation id;
+    private final RegistryObject<RecipeSerializer<?>> serializerObject;
     @Nullable
-    private final DeferredHolder<RecipeType<?>, RecipeType<?>> typeObject;
+    private final RegistryObject<RecipeType<?>> typeObject;
     private final Supplier<RecipeType<?>> type;
 
+    public static final Predicate<? super Recipe<?>> CAN_BE_AUTOMATED = r -> !r.getId()
+            .getPath()
+            .endsWith("_manual_only");
 
-    RubberworksRecipeTypes(StandardProcessingRecipe.Factory<?> processingFactory) {
-        this(() -> new StandardProcessingRecipe.Serializer<>(processingFactory));
-    }
 
     RubberworksRecipeTypes(Supplier<RecipeSerializer<?>> serializerSupplier) {
         String name = Lang.asId(name());
         id = Rubberworks.asResource(name);
-        this.serializerSupplier = serializerSupplier;
         serializerObject = Registers.SERIALIZER_REGISTER.register(name, serializerSupplier);
-        typeObject = Registers.TYPE_REGISTER.register(name, () -> RecipeType.simple(id));
+        typeObject = Registers.TYPE_REGISTER.register(name, () -> simpleType(id));
         type = typeObject;
+    }
+    RubberworksRecipeTypes(ProcessingRecipeBuilder.ProcessingRecipeFactory<?> processingFactory) {
+        this(() -> new ProcessingRecipeSerializer<>(processingFactory));
     }
 
     public static <T extends Recipe<?>> RecipeType<T> simpleType(ResourceLocation id) {
@@ -61,10 +66,8 @@ public enum RubberworksRecipeTypes implements IRecipeTypeInfo, StringRepresentab
         };
     }
 
-
-
     public static void register(IEventBus modEventBus) {
-        ShapedRecipePattern.setCraftingSize(9, 9);
+        ShapedRecipe.setCraftingSize(9, 9);
         Registers.SERIALIZER_REGISTER.register(modEventBus);
         Registers.TYPE_REGISTER.register(modEventBus);
     }
@@ -82,35 +85,41 @@ public enum RubberworksRecipeTypes implements IRecipeTypeInfo, StringRepresentab
 
     @SuppressWarnings("unchecked")
     @Override
-    public <I extends RecipeInput, R extends Recipe<I>> RecipeType<R> getType() {
-        return (RecipeType<R>) type.get();
+    public <T extends RecipeType<?>> T getType() {
+        return (T) type.get();
     }
 
-
-    public <I extends RecipeInput, R extends Recipe<I>> Optional<RecipeHolder<R>> find(I inv, Level world) {
+    public <C extends Container, T extends Recipe<C>> Optional<T> find(C inv, Level world) {
         return world.getRecipeManager()
                 .getRecipeFor(getType(), inv, world);
     }
 
+
     public Optional<CompressingRecipe> find(CompressorBlockEntity blockEntity, Level world) {
+
         if(world.isClientSide())
             return Optional.empty();
-        List<RecipeHolder<CompressingRecipe>> allRecipes = world.getRecipeManager().getAllRecipesFor(RubberworksRecipeTypes.COMPRESSING.getType());
+        List<CompressingRecipe> allRecipes = world.getRecipeManager().getAllRecipesFor(RubberworksRecipeTypes.COMPRESSING.getType());
+
 
         Stream<CompressingRecipe> matchingRecipes =
-                allRecipes.stream().filter(recipe -> CompressingRecipe.match(blockEntity, recipe.value()) ).map(RecipeHolder::value);
+                allRecipes.stream().filter(compressingRecipe -> CompressingRecipe.match(blockEntity, compressingRecipe) );
 
         return matchingRecipes.findAny();
     }
 
+    public static final Set<ResourceLocation> RECIPE_DENY_SET =
+            ImmutableSet.of(new ResourceLocation("occultism", "spirit_trade"), new ResourceLocation("occultism", "ritual"));
 
-    @Override
-    public String getSerializedName() {
-        return id.toString();
+    public static boolean shouldIgnoreInAutomation(Recipe<?> recipe) {
+        RecipeSerializer<?> serializer = recipe.getSerializer();
+        if (serializer != null && AllTags.AllRecipeSerializerTags.AUTOMATION_IGNORE.matches(serializer))
+            return true;
+        return !CAN_BE_AUTOMATED.test(recipe);
     }
 
     private static class Registers {
-        private static final DeferredRegister<RecipeSerializer<?>> SERIALIZER_REGISTER = DeferredRegister.create(BuiltInRegistries.RECIPE_SERIALIZER, Rubberworks.MODID);
+        private static final DeferredRegister<RecipeSerializer<?>> SERIALIZER_REGISTER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Rubberworks.MODID);
         private static final DeferredRegister<RecipeType<?>> TYPE_REGISTER = DeferredRegister.create(Registries.RECIPE_TYPE, Rubberworks.MODID);
     }
 

@@ -1,12 +1,13 @@
 {
   "required": true,
+  "priority": 1100,
   "package": "io.github.hadron13.rubberworks.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_16",
+  "refmap": "rubberworks.refmap.json",
   "mixins": [],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   },
-  "overwrites": {
-    "requireAnnotations": true
-  }
+  "minVersion": "0.8"
 }

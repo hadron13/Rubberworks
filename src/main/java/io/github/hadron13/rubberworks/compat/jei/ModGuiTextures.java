@@ -7,8 +7,8 @@ import net.createmod.catnip.gui.element.ScreenElement;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public enum ModGuiTextures implements ScreenElement, TextureSheetSegment {
     JEI_HEAT_BAR_CENTERED("jei/widgets", 0, 16, 169, 19),
@@ -34,7 +34,7 @@ public enum ModGuiTextures implements ScreenElement, TextureSheetSegment {
     }
 
     ModGuiTextures(String namespace, String location, int startX, int startY, int width, int height) {
-        this.location = ResourceLocation.fromNamespaceAndPath(namespace, "textures/gui/" + location + ".png");
+        this.location = new ResourceLocation(namespace, "textures/gui/" + location + ".png");
         this.width = width;
         this.height = height;
         this.startX = startX;

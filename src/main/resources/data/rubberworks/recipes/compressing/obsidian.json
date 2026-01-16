@@ -1,0 +1,15 @@
+{
+  "type": "rubberworks:compressing",
+  "ingredients": [
+    {
+      "fluid": "minecraft:lava",
+      "amount": 1000
+    }
+  ],
+  "results": [
+    {
+      "item" : "minecraft:obsidian"
+    }
+  ],
+  "processingTime": 150
+}

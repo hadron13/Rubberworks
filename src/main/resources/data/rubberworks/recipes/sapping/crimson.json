@@ -1,0 +1,17 @@
+{
+  "type": "rubberworks:sapping",
+  "ingredients": [
+    {
+      "item": "minecraft:crimson_stem"
+    },
+    {
+      "item": "minecraft:nether_wart_block"
+    }
+  ],
+  "results": [
+    {
+      "amount": 25,
+      "fluid": "minecraft:lava"
+    }
+  ]
+}

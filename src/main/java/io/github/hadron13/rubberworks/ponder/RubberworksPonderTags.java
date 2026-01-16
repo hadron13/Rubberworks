@@ -11,12 +11,19 @@ import static com.simibubi.create.infrastructure.ponder.AllCreatePonderTags.KINE
 
 public class RubberworksPonderTags {
 
+    public static final ResourceLocation
+            LASER_STUFF = Rubberworks.asResource("laser_stuff")
+                    ;
+
     public static void register(PonderTagRegistrationHelper<ResourceLocation> helper) {
-        PonderTagRegistrationHelper<RegistryEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        PonderTagRegistrationHelper<RegistryEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
         HELPER.addToTag(FLUIDS)
                 .add(RubberworksBlocks.SAPPER)
                 .add(RubberworksBlocks.COMPRESSOR);
 
+        HELPER.addToTag(KINETIC_APPLIANCES)
+                .add(RubberworksBlocks.SAPPER)
+                .add(RubberworksBlocks.COMPRESSOR);
     }
 }

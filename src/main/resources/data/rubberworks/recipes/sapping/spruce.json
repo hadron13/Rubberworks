@@ -1,0 +1,17 @@
+{
+  "type": "rubberworks:sapping",
+  "ingredients": [
+    {
+      "item": "minecraft:spruce_log"
+    },
+    {
+      "item": "minecraft:spruce_leaves"
+    }
+  ],
+  "results": [
+    {
+      "amount": 50,
+      "fluid": "rubberworks:resin"
+    }
+  ]
+}

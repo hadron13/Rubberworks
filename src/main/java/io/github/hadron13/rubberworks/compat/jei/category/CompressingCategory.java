@@ -1,10 +1,10 @@
 package io.github.hadron13.rubberworks.compat.jei.category;
 
 import com.simibubi.create.compat.jei.category.CreateRecipeCategory;
-import com.simibubi.create.compat.jei.category.SpoutCategory;
 import com.simibubi.create.compat.jei.category.animations.AnimatedBlazeBurner;
 import com.simibubi.create.content.processing.recipe.HeatCondition;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
+import com.simibubi.create.foundation.fluid.FluidIngredient;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.utility.CreateLang;
 import io.github.hadron13.rubberworks.RubberworksLang;
@@ -19,7 +19,6 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.MutableComponent;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import static com.simibubi.create.content.processing.recipe.HeatCondition.NONE;
 
@@ -37,7 +36,7 @@ public class CompressingCategory extends CreateRecipeCategory<CompressingRecipe>
     public void setRecipe(IRecipeLayoutBuilder builder, CompressingRecipe recipe, IFocusGroup focuses) {
         int yCenter = 75/2;
 
-        SizedFluidIngredient fluidIngredient = recipe.getFluidIngredients().get(0);
+        FluidIngredient fluidIngredient = recipe.getFluidIngredients().get(0);
 
         addFluidSlot(builder, getBackground().getWidth() / 4 - 19 / 2, 23, fluidIngredient);
 

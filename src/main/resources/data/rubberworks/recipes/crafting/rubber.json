@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "rubberworks:rubber_block"
+    }
+  },
+  "pattern": [
+    "C"
+  ],
+  "result": {
+    "count": 9,
+    "item": "rubberworks:rubber"
+  }
+}

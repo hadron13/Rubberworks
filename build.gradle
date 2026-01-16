@@ -1,27 +1,103 @@
 plugins {
-    id 'java-library'
-    id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.137'
-    id 'idea'
+    id "idea"
+    id "eclipse"
+    id "maven-publish"
+    id "net.neoforged.moddev.legacyforge" version "2.0.74"
+    id "dev.ithundxr.silk" version "0.11.15"
+    id "net.kyori.blossom" version "2.1.0" // https://github.com/KyoriPowered/blossom
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.8" // https://github.com/JetBrains/gradle-idea-ext-plugin
 }
 
-tasks.named('wrapper', Wrapper).configure {
-    // Define wrapper values here so as to not have to always do so when updating gradlew.properties.
-    // Switching this to Wrapper.DistributionType.ALL will download the full gradle sources that comes with
-    // documentation attached on cursor hover of gradle classes and methods. However, this comes with increased
-    // file size for Gradle. If you do switch this to ALL, run the Gradle wrapper task twice afterwards.
-    // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
-    distributionType = Wrapper.DistributionType.BIN
+apply from: "./gradle/java.gradle"
+apply from: "gradle/property_loader.gradle"
+4
+def archiveBaseName
+base {
+    version = mod_version
+    group = 'io.github.hadron13.rubberworks' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+    archivesName = "rubberworks-forge-${artifact_minecraft_version}"
+    archiveBaseName = archivesName
 }
 
-version = mod_version
-group = mod_group_id
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+//def refmap
+mixin {
+    //refmap = add sourceSets.main, 'rubberworks.refmap.json'
+    config 'rubberworks.mixins.json'
+}
+
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+legacyForge {
+    version = "$minecraft_version-$forge_version"
+
+
+    validateAccessTransformers = false
+
+    if (file('src/main/resources/META-INF/accesstransformer.cfg').exists()) {
+        accessTransformers.from "src/main/resources/META-INF/accesstransformer.cfg"
+    }
+
+    parchment {
+        minecraftVersion = minecraft_version
+        mappingsVersion = parchment_version
+    }
+    mods {
+        rubberworks {
+            sourceSet sourceSets.main
+        }
+    }
+
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', ''
+            systemProperty 'forge.logging.console.level', 'info'
+            jvmArguments = ["-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition"]
+
+            systemProperty 'mixin.debug.export', 'true'
+            systemProperty 'mixin.debug.verbose', 'true'
+            programArgument '-mixin.config=rubberworks.mixins.json'
+        }
+        client {
+            client()
+            gameDirectory = project.file('run')
+        }
+
+        server {
+            server()
+
+            gameDirectory = project.file('run/server')
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+
+            gameDirectory = project.file('run/gametest')
+        }
+
+        data {
+            data()
+
+            gameDirectory = project.file('run')
+            systemProperty 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+            systemProperty 'forge.logging.console.level', 'debug'
+            programArguments.addAll("--mod", mod_id as String, "--all", "--output", file("src/generated/resources/").getAbsolutePath(), "--existing", file("src/main/resources").getAbsolutePath())
+        }
+    }
+}
+
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
-    maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+    maven { url = "https://maven.tterrag.com" } // Registrate
     maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
     maven {
         //location of the maven for curios api
@@ -35,16 +111,10 @@ repositories {
         }
     }
     maven {
-        url "https://maven.latvian.dev/releases"
+        // saps.dev Maven (KubeJS and Rhino)
+        url = "https://maven.latvian.dev/releases"
         content {
             includeGroup "dev.latvian.mods"
-            includeGroup "dev.latvian.apps"
-        }
-    }
-    maven {
-        url "https://jitpack.io"
-        content {
-            includeGroup "com.github.rtyley"
         }
     }
     maven {
@@ -55,170 +125,109 @@ repositories {
     }
 }
 
-base {
-    archivesName = mod_id + "-neoforge-" + minecraft_version
-}
+dependencies {
+    implementation 'org.jetbrains:annotations:22.0.0'
 
-// Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+    modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
-neoForge {
-    // Specify the version of NeoForge to use.
-    version = project.neo_version
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}"))
 
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
+    modImplementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${flywheel_minecraft_version}:${flywheel_version}")
+    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${flywheel_minecraft_version}:${flywheel_version}")
+    modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
 
-    // This line is optional. Access Transformers are automatically detected
-    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    modImplementation("curse.maven:large-ore-deposits-318833:6867457") {transitive=false}
+    modImplementation("curse.maven:forgeendertech-244844:6816968")
 
-    // Default run configurations.
-    // These can be tweaked, removed, or duplicated as needed.
-    runs {
-        client {
-            client()
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}") { transitive = false }
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}") { transitive = false }
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}") { transitive = false }
+    modRuntimeOnly("curse.maven:createaddition-439890:6306951") { transitive = false }
+    modRuntimeOnly("curse.maven:spark-361579:4738952")
 
-        server {
-            server()
-            programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
+    modRuntimeOnly("curse.maven:embeddium-908741:5681725") { transitive = false }
+    modRuntimeOnly("curse.maven:oculus-581495:6020952") { transitive = false }
 
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
-        // By default, the server will crash when no gametests are provided.
-        // The gametest system is also enabled by default for other run configs under the /test command.
-        gameTestServer {
-            type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
+    modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}") { transitive = false }
 
-        data {
-            data()
 
-            // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
-            // gameDirectory = project.file('run-data')
+    modImplementation("dev.latvian.mods:kubejs-forge:${kubejs_version}")
+    modImplementation("dev.latvian.mods:rhino-forge:${rhino_version}")
+    modImplementation("dev.architectury:architectury-forge:${architectury_version}")
+    modRuntimeOnly("dev.latvian.mods:kubejs-create-forge:${kubejs_create_version}")
 
-            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
-        }
+    //compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_minecraft_version}-${curios_version}:api")
+    //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_minecraft_version}-${curios_version}")
 
-        // applies to all the run configs above
-        configureEach {
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-
-            // Recommended logging level for the console
-            // You can set various levels here.
-            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-            logLevel = org.slf4j.event.Level.DEBUG
-        }
-    }
-
-    mods {
-        // define mod <-> source bindings
-        // these are used to tell the game which sources are for which mod
-        // multi mod projects should define one per mod
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
-        }
+    if (System.getProperty('idea.sync.active') != 'true') {
+        annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
     }
 }
 
 // Include resources generated by data generators.
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main {
+    //java {
 
-// Sets up a dependency configuration called 'localRuntime'.
-// This configuration should be used instead of 'runtimeOnly' to declare
-// a dependency that will be present for runtime testing but that is
-// "optional", meaning it will not be pulled by dependents of this mod.
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
+    //}
+
+    resources {
+        srcDir 'src/generated/resources'
+        exclude '.cache/'
+    }
+
+    blossom.javaSources {
+        property("version", build_info_mod_version)
+    }
 }
 
-dependencies {
+processResources {
+    def buildProps = project.properties.clone()
 
+    // Replaces FML's magic file.jarVersion string with the correct version at build time.
+    buildProps.put('file', [jarVersion: project.version])
 
-    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
-    implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
-    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
-    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
-    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
-
-    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    // at runtime, use the full JEI jar for NeoForge
-    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
-
-    api("dev.latvian.mods:kubejs-neoforge:$kubejs_version")
-    interfaceInjectionData("dev.latvian.mods:kubejs-neoforge:$kubejs_version")
-    implementation("dev.latvian.mods:kubejs-create-neoforge:$kubejs_create_version")
-
-
-    implementation("curse.maven:large-ore-deposits-318833:7301758")
-    implementation("curse.maven:forgeendertech-244844:7070495")
-    implementation("curse.maven:createaddition-439890:7262496")
-
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand buildProps
+    }
 }
 
-// This block of code expands all declared replace properties in the specified resource targets.
-// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
-    var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-    ]
-    inputs.properties replaceProperties
-    expand replaceProperties
-    from "src/main/templates"
-    into "build/generated/sources/modMetadata"
+compileJava {
+    options.compilerArgs = ['-Xdiags:verbose']
 }
-// Include the output of "generateModMetadata" as an input directory for the build
-// this works with both building through Gradle and the IDE.
-sourceSets.main.resources.srcDir generateModMetadata
-// To avoid having to run "generateModMetadata" manually, make it run on every project reload
-neoForge.ideSyncTask generateModMetadata
 
-// Example configuration to allow publishing using the maven-publish plugin
+jar {
+    from('LICENSE') {
+        rename { "${it}_${archiveBaseName}" }
+    }
+
+    manifest.attributes([
+            "MixinConfigs": "rubberworks.mixins.json"
+    ])
+}
+
+
+final slimJar = tasks.register("slimJar", Jar) {
+    archiveClassifier = "slim"
+    from(sourceSets.main.output)
+    //from(refmap)
+    manifest.attributes([
+            "MixinConfigs": "rubberworks.mixins.json"
+    ])
+}
+obfuscation.reobfuscate(slimJar, sourceSets.main)
+
 publishing {
     publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
+        mavenJava(MavenPublication) {
+            artifact jar
         }
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            url "file://${project.projectDir}/mcmodsrepo"
         }
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
-// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
     }
 }

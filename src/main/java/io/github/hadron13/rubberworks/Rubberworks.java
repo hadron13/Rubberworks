@@ -1,27 +1,31 @@
 package io.github.hadron13.rubberworks;
 
+import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import io.github.hadron13.rubberworks.config.RubberworksConfig;
 import io.github.hadron13.rubberworks.data.RubberworksDatagen;
+import io.github.hadron13.rubberworks.ponder.RubberworksPonderPlugin;
 import io.github.hadron13.rubberworks.register.*;
 import net.createmod.catnip.lang.FontHelper;
-import net.minecraft.resources.ResourceKey;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.fml.ModLoadingContext;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
-import com.mojang.logging.LogUtils;
-
-import net.minecraft.world.item.CreativeModeTab;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.ModContainer;
-
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
+// The value here should match an entry in the META-INF/mods.toml file
 @Mod(Rubberworks.MODID)
 public class Rubberworks {
 
@@ -34,35 +38,41 @@ public class Rubberworks {
     private static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MODID);
 
     static {
-        REGISTRATE
-                .defaultCreativeTab((ResourceKey<CreativeModeTab>) null)
-                .setTooltipModifierFactory((item) -> (new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)).andThen(TooltipModifier.mapNull(KineticStats.create(item))));
+        REGISTRATE.setTooltipModifierFactory((item) -> (new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)).andThen(TooltipModifier.mapNull(KineticStats.create(item))));
     }
 
-
-    public Rubberworks(IEventBus modEventBus, ModContainer modContainer) {
+    public Rubberworks() {
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
+        modEventBus = FMLJavaModLoadingContext.get()
+                .getModEventBus();
 
+        IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
 
         REGISTRATE.registerEventListeners(modEventBus);
 
-        RubberworksCreativeModeTabs.register(modEventBus);
+        RubberworksCreativeTabs.register(modEventBus);
         RubberworksBlocks.register();
         RubberworksItems.register();
         RubberworksBlockEntities.register();
         RubberworksFluids.register();
         RubberworksPartialModels.init();
         RubberworksRecipeTypes.register(modEventBus);
-        RubberworksConfig.register(modLoadingContext, modContainer);
 
-        modEventBus.addListener(EventPriority.HIGHEST, RubberworksDatagen::gatherDataHighPriority);
+
+        RubberworksConfig.register(modLoadingContext);
+
         modEventBus.addListener(EventPriority.LOWEST, RubberworksDatagen::gatherData);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> modEventBus.addListener(Rubberworks::clientInit) );
+
+        MinecraftForge.EVENT_BUS.register(this);
 
     }
 
+    public static void clientInit(final FMLClientSetupEvent event){
 
+        PonderIndex.addPlugin(new RubberworksPonderPlugin());
 
-
+    }
 
     public static CreateRegistrate registrate(){
         return REGISTRATE;
@@ -70,7 +80,13 @@ public class Rubberworks {
 
 
     public static ResourceLocation asResource(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+        return new ResourceLocation(MODID, path);
+    }
+
+
+
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
+
     }
 }
-

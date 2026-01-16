@@ -1,19 +1,20 @@
 package io.github.hadron13.rubberworks.blocks.sapper;
 
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
-import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe;
+
+import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder.ProcessingRecipeParams;
 import io.github.hadron13.rubberworks.Rubberworks;
 import io.github.hadron13.rubberworks.register.RubberworksRecipeTypes;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.items.wrapper.RecipeWrapper;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class SappingRecipe extends StandardProcessingRecipe<RecipeInput> {
+public class SappingRecipe extends ProcessingRecipe<RecipeWrapper> {
 
     public SappingRecipe(ProcessingRecipeParams params) {
         super(RubberworksRecipeTypes.SAPPING, params);
@@ -21,16 +22,20 @@ public class SappingRecipe extends StandardProcessingRecipe<RecipeInput> {
         Item logItem = this.getIngredients().get(0).getItems()[0].getItem();
         Item leafItem = this.getIngredients().get(1).getItems()[0].getItem();
 
-        if(logItem instanceof BlockItem && leafItem instanceof BlockItem && !this.getFluidResults().isEmpty()){
+        if(logItem instanceof BlockItem && leafItem instanceof BlockItem){
             FluidStack result = this.getFluidResults().get(0);
 
             SapperBlockEntity.TreeType.registerTree(((BlockItem) logItem).getBlock(), ((BlockItem) leafItem).getBlock(), result);
         }else{
-            Rubberworks.LOGGER.warn("Sapping recipe id: "+ this.params.toString() +" contains non-block ingredients");
+            Rubberworks.LOGGER.warn("Sapping recipe id: "+ this.getId().toString() +" contains non-block ingredients");
         }
 
     }
 
+    @Override
+    public boolean matches(RecipeWrapper inv, Level worldIn) {
+        return false;
+    }
     @Override
     protected boolean canSpecifyDuration() {
         return false;
@@ -46,8 +51,4 @@ public class SappingRecipe extends StandardProcessingRecipe<RecipeInput> {
         return 1;
     }
 
-    @Override
-    public boolean matches(RecipeInput recipeInput, Level level) {
-        return false;
-    }
 }

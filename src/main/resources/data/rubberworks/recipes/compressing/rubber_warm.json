@@ -1,0 +1,14 @@
+{
+  "type": "rubberworks:compressing",
+  "ingredients": [
+    {
+      "amount": 500,
+      "fluid": "rubberworks:resin"
+    }
+  ],
+  "results": [
+    {
+      "item" : "rubberworks:rubber"
+    }
+  ]
+}
