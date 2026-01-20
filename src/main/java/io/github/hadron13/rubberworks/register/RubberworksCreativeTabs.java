@@ -33,7 +33,7 @@ public class RubberworksCreativeTabs {
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.rubberworks.main"))
                     .withTabsBefore(AllCreativeModeTabs.PALETTES_CREATIVE_TAB.getId())
-                    .icon(AllBlocks.GEARBOX::asStack)
+                    .icon(RubberworksBlocks.SAPPER::asStack)
                     .displayItems(new RegistrateDisplayItemsGenerator(RubberworksCreativeTabs.MAIN_TAB))
                     .build());
 
