@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.simibubi.create.content.kinetics.base.HorizontalKineticBlock.HORIZONTAL_FACING;
+import static net.minecraft.world.level.block.LeavesBlock.PERSISTENT;
 import static net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE;
 
 public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation {
@@ -217,15 +218,13 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
                 leafType = leafState.getBlock();
             }
 
-            if(leafState.getBlock() == leafType){
+            if(leafState.getBlock() == leafType && (!leafState.hasProperty(PERSISTENT) || !leafState.getValue(PERSISTENT)) ){
                 leafPos[leafCount] = pos.immutable();
                 leafCount++;
                 if(leafCount == NUM_LEAVES) {
                     cached = true;
                     valid = true;
-//                    outputFluid = new FluidStack(AllFluids.CHOCOLATE.get(), 100);
                     outputFluid = TreeType.getFluid(trunkType.getBlock(), leafType);
-                    Rubberworks.LOGGER.debug(outputFluid.toString());
                     return;
                 }
             }
