@@ -8,6 +8,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,12 +25,21 @@ public class SappingRecipe extends StandardProcessingRecipe<RecipeInput> {
         if(logItem instanceof BlockItem && leafItem instanceof BlockItem && !this.getFluidResults().isEmpty()){
             FluidStack result = this.getFluidResults().get(0);
 
-            SapperBlockEntity.TreeType.registerTree(((BlockItem) logItem).getBlock(), ((BlockItem) leafItem).getBlock(), result);
+            SapperBlockEntity.TreeType.registerTree(((BlockItem) logItem).getBlock(), ((BlockItem) leafItem).getBlock());
         }else{
-            Rubberworks.LOGGER.warn("Sapping recipe id: "+ this.params.toString() +" contains non-block ingredients");
+            Rubberworks.LOGGER.error("Sapping recipe contains non-block ingredients");
         }
 
     }
+
+    public Block getLog(){
+        return ((BlockItem)this.getIngredients().get(0).getItems()[0].getItem()).getBlock();
+    }
+
+    public Block getLeaf(){
+        return ((BlockItem)this.getIngredients().get(1).getItems()[0].getItem()).getBlock();
+    }
+
 
     @Override
     protected boolean canSpecifyDuration() {

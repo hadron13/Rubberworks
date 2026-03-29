@@ -1,12 +1,12 @@
 package io.github.hadron13.rubberworks.register;
 
 
+import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import io.github.hadron13.rubberworks.Rubberworks;
 import io.github.hadron13.rubberworks.blocks.compressor.CompressorBlockEntity;
 import io.github.hadron13.rubberworks.blocks.compressor.CompressorRenderer;
-import io.github.hadron13.rubberworks.blocks.compressor.CompressorVisual;
 import io.github.hadron13.rubberworks.blocks.sapper.SapperBlockEntity;
 import io.github.hadron13.rubberworks.blocks.sapper.SapperRenderer;
 import io.github.hadron13.rubberworks.blocks.sapper.SapperVisual;
@@ -31,7 +31,7 @@ public class RubberworksBlockEntities {
 
     public static final BlockEntityEntry<CompressorBlockEntity> COMPRESSOR = REGISTRATE
             .blockEntity("compressor", CompressorBlockEntity::new)
-            .visual(() -> CompressorVisual::new)
+            .visual(() -> SingleAxisRotatingVisual.of(RubberworksPartialModels.COMPRESSOR_ROLL))
             .validBlocks(RubberworksBlocks.COMPRESSOR)
             .renderer(() -> CompressorRenderer::new)
             .register();

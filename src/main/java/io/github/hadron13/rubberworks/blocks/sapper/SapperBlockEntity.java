@@ -7,9 +7,9 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
 import com.simibubi.create.foundation.fluid.SmartFluidTank;
 
-import io.github.hadron13.rubberworks.Rubberworks;
 import io.github.hadron13.rubberworks.RubberworksLang;
 import io.github.hadron13.rubberworks.register.RubberworksBlockEntities;
+import io.github.hadron13.rubberworks.register.RubberworksRecipeTypes;
 import net.createmod.catnip.data.Couple;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,9 +29,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 import static com.simibubi.create.content.kinetics.base.HorizontalKineticBlock.HORIZONTAL_FACING;
 import static net.minecraft.world.level.block.LeavesBlock.PERSISTENT;
@@ -154,11 +154,13 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         boolean kineticTooltip = super.addToGoggleTooltip(tooltip, isPlayerSneaking);
         boolean fluidTooltip = containedFluidTooltip(tooltip, isPlayerSneaking, tank.getCapability());
-        if(isTankFull())
-            RubberworksLang.addHint(tooltip,"hint.sapper.full");
+
+        if(getSpeed() != 0f && !valid)
+            RubberworksLang.addHint(tooltip,"hint.sapper.invalid");
 
         return kineticTooltip || fluidTooltip;
     }
+
     public boolean isTankFull(){
         return tank.getPrimaryHandler().getFluidAmount() == 1000;
     }
@@ -222,9 +224,21 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
                 leafPos[leafCount] = pos.immutable();
                 leafCount++;
                 if(leafCount == NUM_LEAVES) {
+
+                    List<RecipeHolder<SappingRecipe>> allRecipes = level.getRecipeManager().getAllRecipesFor(RubberworksRecipeTypes.SAPPING.getType());
+
+                    Optional<SappingRecipe> matchingRecipes =
+                            allRecipes.stream()
+                                    .map(RecipeHolder::value)
+                                    .filter(recipe -> trunkType.is(recipe.getLog()) && leafState.is(recipe.getLeaf()) )
+                                    .findAny();
+                    if(matchingRecipes.isEmpty())
+                        return;
+
+                    outputFluid = matchingRecipes.get().getFluidResults().get(0);
+
                     cached = true;
                     valid = true;
-                    outputFluid = TreeType.getFluid(trunkType.getBlock(), leafType);
                     return;
                 }
             }
@@ -295,20 +309,17 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
     }
 
     public static class TreeType{
-        public static List<Block> logTypes = new ArrayList<>();
-        public static HashMap<Couple<Block>, FluidStack> treeFluids = new HashMap<>();
-        public static void registerTree(Block log, Block leaf, FluidStack fluid){
+        public static HashSet<Block> logTypes = new HashSet<>();
+        public static HashSet<Couple<Block>> treeTypes = new HashSet<>();
+        public static void registerTree(Block log, Block leaf){
             logTypes.add(log);
-            treeFluids.put(Couple.create(log, leaf), fluid);
+            treeTypes.add(Couple.create(log, leaf));
         }
         public static boolean isValidLog(BlockState state){
             return logTypes.contains( state.getBlock() );
         }
         public static boolean isValidTree(BlockState log, BlockState leaf){
-            return treeFluids.containsKey(Couple.create(log.getBlock(), leaf.getBlock()));
-        }
-        public static FluidStack getFluid(Block log, Block leaf){
-            return treeFluids.get(Couple.create(log, leaf));
+            return treeTypes.contains(Couple.create(log.getBlock(), leaf.getBlock()));
         }
     }
 }

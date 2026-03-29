@@ -1,8 +1,8 @@
 {
   "itemGroup.rubberworks.main": "Create: Rubberworks",
 
-  "rubberworks.hint.sapper.full.title": "Internal Tank Full",
-  "rubberworks.hint.sapper.full": "",
+  "rubberworks.hint.sapper.invalid.title": "Invalid Tree",
+  "rubberworks.hint.sapper.invalid": "It appears that this Sapper has no sap to extract",
   "rubberworks.hint.compressor.reverse.title": "Direction Requirement:",
   "rubberworks.hint.compressor.reverse": "It appears that this Compressor is rotating in the _wrong direction_.",
   "rubberworks.hint.compressor.heat.title": "Heat Requirement:",
