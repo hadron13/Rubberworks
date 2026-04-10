@@ -88,12 +88,9 @@ public class CompressorRenderer extends KineticBlockEntityRenderer<CompressorBlo
     }
 
 
-
-
-
     @Override
     protected SuperByteBuffer getRotatedModel(CompressorBlockEntity be, BlockState state) {
-        return CachedBuffers.partialFacing(RubberworksPartialModels.COMPRESSOR_ROLL, state, state.getValue(HORIZONTAL_FACING));
+        return CachedBuffers.partialFacing(RubberworksPartialModels.COMPRESSOR_ROLL, state, state.getValue(HORIZONTAL_FACING).getClockWise());
     }
 
 

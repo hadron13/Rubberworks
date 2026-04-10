@@ -31,7 +31,7 @@ public class RubberworksBlockEntities {
 
     public static final BlockEntityEntry<CompressorBlockEntity> COMPRESSOR = REGISTRATE
             .blockEntity("compressor", CompressorBlockEntity::new)
-            .visual(() -> SingleAxisRotatingVisual.of(RubberworksPartialModels.COMPRESSOR_ROLL))
+            .visual(() -> SingleAxisRotatingVisual.ofZ(RubberworksPartialModels.COMPRESSOR_ROLL))
             .validBlocks(RubberworksBlocks.COMPRESSOR)
             .renderer(() -> CompressorRenderer::new)
             .register();
