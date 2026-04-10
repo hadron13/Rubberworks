@@ -1,5 +1,6 @@
 package io.github.hadron13.rubberworks.register;
 
+import com.simibubi.create.foundation.data.AssetLookup;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import io.github.hadron13.rubberworks.Rubberworks;
@@ -13,7 +14,9 @@ public class RubberworksItems {
     public static final ItemEntry<Item> RUBBER = ingredient("rubber"),
             RUBBER_SHEET = ingredient("rubber_sheet");
 
-    public static final ItemEntry<PlungerItem> PLUNGER = REGISTRATE.item("plunger", PlungerItem::new).register();
+    public static final ItemEntry<PlungerItem> PLUNGER = REGISTRATE.item("plunger", PlungerItem::new)
+            .model(AssetLookup.itemModel("plunger"))
+            .register();
 
     private static ItemEntry<Item> ingredient(String name) {
         return REGISTRATE.item(name, Item::new)

@@ -1,3 +1,6 @@
 {
-
+  "item.rubberworks.plunger.tooltip": "PLUNGER",
+  "item.rubberworks.plunger.tooltip.summary": "Plunge fluids out of _any_ block",
+  "item.rubberworks.plunger.tooltip.condition1": "When used on a Block containing Fluid",
+  "item.rubberworks.plunger.tooltip.behaviour1": "Plunges the _first_ fluid contained in the Block"
 }

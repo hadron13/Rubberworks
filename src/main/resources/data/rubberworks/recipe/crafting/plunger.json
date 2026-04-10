@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": {
+      "item": "rubberworks:rubber_sheet"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    " R ",
+    " RR",
+    "S  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "rubberworks:plunger"
+  }
+}
