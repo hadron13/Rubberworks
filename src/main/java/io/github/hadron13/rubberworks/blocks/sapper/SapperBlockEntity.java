@@ -7,11 +7,16 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
 import com.simibubi.create.foundation.fluid.SmartFluidTank;
 
+import io.github.hadron13.rubberworks.Rubberworks;
 import io.github.hadron13.rubberworks.RubberworksLang;
 import io.github.hadron13.rubberworks.register.RubberworksBlockEntities;
+import io.github.hadron13.rubberworks.register.RubberworksBlocks;
+import io.github.hadron13.rubberworks.register.RubberworksFluids;
 import io.github.hadron13.rubberworks.register.RubberworksRecipeTypes;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -39,6 +44,7 @@ import static net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction
 public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation {
 
     public static final int NUM_LEAVES = 5;
+    public static final int NUM_SAPPERS = 5;
     public static final int EXTENSION_TIME = 10;
 
     private int extendedTicks = 0;
@@ -48,6 +54,8 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
     private boolean cached = false;
     //registers a few leaves to keep track of
     public BlockPos[] leafPos = new BlockPos[NUM_LEAVES];
+    public BlockPos[] otherSappers = new BlockPos[NUM_SAPPERS];
+    public int otherSapperCounter = 0;
     public SmartFluidTankBehaviour tank;
 
     private FluidStack outputFluid;
@@ -62,9 +70,8 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
         extendedTicks = 0;
         sapTimer = 0f;
         sapperState = RETRACTED;
+        setLazyTickRate(10);
     }
-
-
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
@@ -87,8 +94,6 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
 
         float speed = Math.abs(getSpeed());
 
-        checkValidity();
-
         boolean onClient = level.isClientSide && !isVirtual();
 
         switch (sapperState) {
@@ -98,7 +103,6 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
 
 
                     sapTimer = 200*32;
-
                 }
             }
             case EXTENDING -> {
@@ -124,6 +128,12 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
                     }
 
                     SmartFluidTank localTank = tank.getPrimaryHandler();
+
+                    if(otherSapperCounter > 0){
+                        float efficiency = 1.0f/(otherSapperCounter + 1.0f);
+                        outputFluid.setAmount((int) (outputFluid.getAmount() * efficiency));
+                    }
+
                     if(outputFluid != null)
                         localTank.fill(outputFluid, EXECUTE);
 
@@ -158,6 +168,18 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
         if(getSpeed() != 0f && !valid)
             RubberworksLang.addHint(tooltip,"hint.sapper.invalid");
 
+        if(otherSapperCounter > 0) {
+            float efficiency = 1.0f/(otherSapperCounter + 1.0f);
+            if(otherSapperCounter >= 5)
+                efficiency = 0;
+
+            RubberworksLang.addHint(tooltip, "hint.sapper.inefficient");
+            RubberworksLang.translate("gui.sapper.efficiency")
+                    .text(" " + (int)(efficiency*100.0f) + "%")
+                    .forGoggles(tooltip);
+        }
+
+
         return kineticTooltip || fluidTooltip;
     }
 
@@ -171,6 +193,10 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
         BlockPos baseTrunkPos = getBlockPos().relative(getBlockState().getValue(HORIZONTAL_FACING).getOpposite(), 2);
 
         BlockState trunkType = level.getBlockState(baseTrunkPos);
+        while (level.getBlockState(baseTrunkPos.below()) == trunkType) {
+            baseTrunkPos = baseTrunkPos.below();
+        }
+
         if(!TreeType.isValidLog(trunkType)) {
             cached = false;
             valid = false;
@@ -183,7 +209,6 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
             trunkPos = trunkPos.above();
             treeHeight++;
         }
-//        Rubberworks.LOGGER.debug("tree height: "+String.valueOf(treeHeight));
         if(treeHeight == 1){
             valid = false;
             cached = false;
@@ -192,15 +217,33 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
 
         int vertical = Math.min(level.getMaxBuildHeight() - worldPosition.getY(), treeHeight + 3);
 
-        Iterable<BlockPos> leafArea = BlockPos.betweenClosed(   baseTrunkPos.offset(3,0,3),
-                                                                baseTrunkPos.offset( -3, vertical, -3));
+        otherSapperCounter = 0;
+        for(Direction dir : Iterate.horizontalDirections){
+            Iterable<BlockPos> sapperArea = BlockPos.betweenClosed(baseTrunkPos.relative(dir, 2), baseTrunkPos.relative(dir, 2).above(treeHeight));
+            for(BlockPos pos : sapperArea){
+                BlockState blockState = level.getBlockState(pos);
+                if(blockState.is(RubberworksBlocks.SAPPER)){
+                    if(otherSapperCounter == NUM_SAPPERS)
+                        continue;
+                    if(pos.equals(worldPosition))
+                        continue;
+                    if(blockState.getValue(HORIZONTAL_FACING) != dir)
+                        continue;
+
+                    otherSappers[otherSapperCounter] = pos;
+                    otherSapperCounter++;
+                }
+            }
+        }
+        sendData();
 
         if(cached){
             for (BlockPos pos: leafPos) {
+                if(pos == null)
+                    continue;
                 if (!level.getBlockState(pos).is(BlockTags.LEAVES)) {
                     cached = false;
                     valid = false;
-
                     break;
                 }
             }
@@ -209,6 +252,9 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
 
         int leafCount = 0;
         Block leafType = null;
+
+        Iterable<BlockPos> leafArea = BlockPos.betweenClosed(   baseTrunkPos.offset(3,0,3),
+                baseTrunkPos.offset( -3, vertical, -3));
 
         for(BlockPos pos : leafArea){
             BlockState leafState = level.getBlockState(pos);
@@ -243,9 +289,12 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
                 }
             }
         }
-
     }
 
+    @Override
+    public void lazyTick() {
+        checkValidity();
+    }
 
     public float getRenderedHeadOffset(float partialTicks) {
 
@@ -274,7 +323,7 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
 
     public void ponderFill(int ammount){
         SmartFluidTank localTank = tank.getPrimaryHandler();
-        localTank.fill(new FluidStack(AllFluids.CHOCOLATE.get(), ammount),
+        localTank.fill(new FluidStack(RubberworksFluids.RESIN.get(), ammount),
                 EXECUTE);
     }
 
@@ -285,10 +334,6 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
         super.tickAudio();
     }
 
-    public static FluidStack getFluid(Block leaf, Block trunk){
-        return new FluidStack(AllFluids.CHOCOLATE.get(), 150);
-    }
-
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
 
@@ -296,6 +341,8 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
         compound.putInt("sapState", sapperState);
         compound.putInt("exTime", extendedTicks);
         compound.putBoolean("val", valid);
+        if(clientPacket)
+            compound.putInt("otherSappers", otherSapperCounter);
         super.write(compound, registries, clientPacket);
     }
 
@@ -305,6 +352,8 @@ public class SapperBlockEntity extends KineticBlockEntity implements IHaveHoveri
         sapperState = compound.getInt("sapState");
         extendedTicks = compound.getInt("exTime");
         valid = compound.getBoolean("val");
+        if(clientPacket)
+            otherSapperCounter = compound.getInt("otherSappers");
         super.read(compound, registries, clientPacket);
     }
 
